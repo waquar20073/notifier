@@ -16,6 +16,7 @@ type Message struct {
 	SenderEmail string `json:"sender_email"`
 	Name       string `json:"name"`
 	Body       string `json:"body"`
+	ToEmail    string `json:"to_email"`
 }
 
 // SendEmailHTTP is an HTTP Cloud Function
@@ -52,9 +53,16 @@ func SendEmailHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate required fields
-	if req.SenderEmail == "" || req.Name == "" || req.Body == "" {
+	if req.SenderEmail == "" || req.Name == "" || req.Body == "" || req.ToEmail == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Response{Error: "Missing required fields"})
+		json.NewEncoder(w).Encode(Response{Error: "Missing required fields: sender_email, name, body, and to_email are required"})
+		return
+	}
+
+	// Basic email format validation
+	if !strings.Contains(req.ToEmail, "@") || !strings.Contains(req.ToEmail, ".") {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(Response{Error: "Invalid email format for to_email"})
 		return
 	}
 

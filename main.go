@@ -15,6 +15,7 @@ type EmailRequest struct {
 	SenderEmail string `json:"sender_email"`
 	Name       string `json:"name"`
 	Body       string `json:"body"`
+	ToEmail    string `json:"to_email"`
 }
 
 func init() {
@@ -29,7 +30,20 @@ func SendEmail(ctx context.Context, req EmailRequest) (string, error) {
 	// Get environment variables
 	emailUser := os.Getenv("EMAIL_USER")
 	emailPass := os.Getenv("EMAIL_PASS")
-	toEmail := os.Getenv("TO_EMAIL")
+	allowedEmails := strings.Split(os.Getenv("ALLOWED_EMAILS"), ",")
+
+	// Validate recipient email is in allowed list
+	isAllowed := false
+	for _, email := range allowedEmails {
+		if strings.TrimSpace(email) == req.ToEmail {
+			isAllowed = true
+			break
+		}
+	}
+
+	if !isAllowed {
+		return "", fmt.Errorf("email not authorized to send to %s", req.ToEmail)
+	}
 
 	if emailUser == "" || emailPass == "" || toEmail == "" {
 		return "", fmt.Errorf("missing required environment variables")
@@ -38,7 +52,7 @@ func SendEmail(ctx context.Context, req EmailRequest) (string, error) {
 	// Create email message
 	m := gomail.NewMessage()
 	m.SetHeader("From", emailUser)
-	m.SetHeader("To", toEmail)
+	m.SetHeader("To", req.ToEmail)
 	m.SetHeader("Reply-To", req.SenderEmail)
 	m.SetHeader("Subject", fmt.Sprintf("New message from %s", req.Name))
 
