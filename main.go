@@ -45,7 +45,7 @@ func SendEmail(ctx context.Context, req EmailRequest) (string, error) {
 		return "", fmt.Errorf("email not authorized to send to %s", req.ToEmail)
 	}
 
-	if emailUser == "" || emailPass == "" || toEmail == "" {
+	if emailUser == "" || emailPass == "" || req.ToEmail == "" {
 		return "", fmt.Errorf("missing required environment variables")
 	}
 

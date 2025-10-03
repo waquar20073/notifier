@@ -3,6 +3,7 @@ package email_sender
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
